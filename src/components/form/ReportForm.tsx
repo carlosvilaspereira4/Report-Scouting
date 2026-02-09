@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Player, Grade, FollowUp } from '../../types';
 import { DESCRIPTION_SECTIONS } from '../../constants/reportOptions';
-import { searchPlayers as defaultSearch } from '../../data/mockPlayers';
+import { searchPlayersZerozero } from '../../services/zerozeroApi';
 import { PlayerSearchInput } from './PlayerSearchInput';
 import { PlayerInfoDisplay } from './PlayerInfoDisplay';
 import { GradeSelector } from './GradeSelector';
@@ -32,7 +32,7 @@ interface Props {
 
 export function ReportForm({ formData, onChange, onSubmit, searchPlayersFn, errors }: Props) {
   const [submitted, setSubmitted] = useState(false);
-  const searchFn = searchPlayersFn ?? defaultSearch;
+  const searchFn = searchPlayersFn ?? searchPlayersZerozero;
 
   function update<K extends keyof ReportFormData>(key: K, value: ReportFormData[K]) {
     onChange({ ...formData, [key]: value });
@@ -62,9 +62,12 @@ export function ReportForm({ formData, onChange, onSubmit, searchPlayersFn, erro
         )}
       </section>
 
-      {/* Player Info Display */}
+      {/* Player Info Display (editable) */}
       {formData.player && (
-        <PlayerInfoDisplay player={formData.player} />
+        <PlayerInfoDisplay
+          player={formData.player}
+          onUpdate={(updatedPlayer) => update('player', updatedPlayer)}
+        />
       )}
 
       {/* Match Context */}

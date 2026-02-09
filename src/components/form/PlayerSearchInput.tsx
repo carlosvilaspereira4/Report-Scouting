@@ -2,6 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { Search, Loader2, X } from 'lucide-react';
 import type { Player } from '../../types';
 import { usePlayerSearch } from '../../hooks/usePlayerSearch';
+import { fetchPlayerDetails } from '../../services/zerozeroApi';
+
+interface PlayerWithSlug extends Player {
+  _slug?: string;
+}
 
 interface Props {
   searchPlayers: (query: string) => Promise<Player[]>;
@@ -14,6 +19,7 @@ export function PlayerSearchInput({ searchPlayers, selectedPlayer, onSelect, onC
   const { query, setQuery, results, isLoading } = usePlayerSearch(searchPlayers);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -51,10 +57,29 @@ export function PlayerSearchInput({ searchPlayers, selectedPlayer, onSelect, onC
     }
   }
 
-  function handleSelect(player: Player) {
-    onSelect(player);
-    setQuery(player.name);
+  async function handleSelect(player: Player) {
     setIsOpen(false);
+    setQuery(player.name);
+
+    // If the player came from zerozero search (has _slug), fetch full details
+    const playerWithSlug = player as PlayerWithSlug;
+    if (playerWithSlug._slug) {
+      setIsLoadingDetails(true);
+      try {
+        const details = await fetchPlayerDetails(player.id, playerWithSlug._slug);
+        if (details) {
+          onSelect(details);
+          setQuery(details.name);
+          setIsLoadingDetails(false);
+          return;
+        }
+      } catch {
+        // Fallback to basic data
+      }
+      setIsLoadingDetails(false);
+    }
+
+    onSelect(player);
   }
 
   function handleClear() {
@@ -68,7 +93,8 @@ export function PlayerSearchInput({ searchPlayers, selectedPlayer, onSelect, onC
       <div className="flex items-center gap-3 rounded-lg border border-brand-200 bg-brand-50 px-4 py-3">
         <Search className="h-5 w-5 text-brand-400" />
         <span className="flex-1 font-medium text-brand-700">
-          {selectedPlayer.name} ({selectedPlayer.club} {selectedPlayer.ageGroup})
+          {selectedPlayer.name}
+          {selectedPlayer.club ? ` (${selectedPlayer.club}${selectedPlayer.ageGroup ? ` ${selectedPlayer.ageGroup}` : ''})` : ''}
         </span>
         <button
           type="button"
@@ -92,16 +118,25 @@ export function PlayerSearchInput({ searchPlayers, selectedPlayer, onSelect, onC
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => results.length > 0 && setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Pesquisar jogador por nome ou clube..."
+          placeholder="Pesquisar jogador no zerozero.pt..."
           className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-10 text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200 focus:outline-none"
           autoComplete="off"
         />
-        {isLoading && (
+        {(isLoading || isLoadingDetails) && (
           <Loader2 className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-brand-400" />
         )}
       </div>
 
-      {isOpen && results.length > 0 && (
+      {isLoadingDetails && (
+        <div className="absolute z-50 mt-1 w-full rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-600 shadow-lg">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            A carregar dados do jogador do zerozero.pt...
+          </div>
+        </div>
+      )}
+
+      {!isLoadingDetails && isOpen && results.length > 0 && (
         <ul className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg">
           {results.map((player, index) => (
             <li
@@ -117,18 +152,21 @@ export function PlayerSearchInput({ searchPlayers, selectedPlayer, onSelect, onC
               </div>
               <div className="flex-1">
                 <div className="font-medium">{player.name}</div>
-                <div className="text-xs text-gray-500">
-                  {player.club} {player.ageGroup} &middot; {player.position}
-                </div>
+                {player.club && (
+                  <div className="text-xs text-gray-500">
+                    {player.club}
+                    {player.position ? ` · ${player.position}` : ''}
+                  </div>
+                )}
               </div>
             </li>
           ))}
         </ul>
       )}
 
-      {isOpen && query.length >= 2 && !isLoading && results.length === 0 && (
+      {!isLoadingDetails && isOpen && query.length >= 2 && !isLoading && results.length === 0 && (
         <div className="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-500 shadow-lg">
-          Nenhum jogador encontrado
+          Nenhum jogador encontrado no zerozero.pt
         </div>
       )}
     </div>
