@@ -1,14 +1,11 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState } from 'react';
 import { Download, Loader2, Eye, PenLine } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { AppShell } from './components/layout/AppShell';
 import { ReportForm } from './components/form/ReportForm';
 import { ReportPreview } from './components/preview/ReportPreview';
+import { ReportDocument } from './components/pdf/ReportDocument';
 import type { ReportFormData } from './components/form/ReportForm';
-
-const ReportDocument = lazy(() =>
-  import('./components/pdf/ReportDocument').then((m) => ({ default: m.ReportDocument }))
-);
 
 const INITIAL_DATA: ReportFormData = {
   player: null,
@@ -57,9 +54,7 @@ export default function App() {
     setIsGenerating(true);
     try {
       const blob = await pdf(
-        <Suspense fallback={null}>
-          <ReportDocument data={formData} />
-        </Suspense>
+        <ReportDocument data={formData} />
       ).toBlob();
 
       const url = URL.createObjectURL(blob);

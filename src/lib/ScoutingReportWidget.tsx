@@ -1,15 +1,12 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import type { ScoutingReportWidgetProps } from '../types';
 import { searchPlayers as defaultSearch } from '../data/mockPlayers';
 import { ReportForm } from '../components/form/ReportForm';
 import { ReportPreview } from '../components/preview/ReportPreview';
+import { ReportDocument } from '../components/pdf/ReportDocument';
 import type { ReportFormData } from '../components/form/ReportForm';
-
-const ReportDocument = lazy(() =>
-  import('../components/pdf/ReportDocument').then((m) => ({ default: m.ReportDocument }))
-);
 
 const INITIAL_DATA: ReportFormData = {
   player: null,
@@ -59,9 +56,7 @@ export function ScoutingReportWidget({
     try {
       // Generate PDF
       const blob = await pdf(
-        <Suspense fallback={null}>
-          <ReportDocument data={formData} />
-        </Suspense>
+        <ReportDocument data={formData} />
       ).toBlob();
 
       // If parent provided an onSubmit callback, call it
