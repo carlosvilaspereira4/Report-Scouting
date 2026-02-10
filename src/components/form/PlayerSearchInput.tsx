@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Loader2, X } from 'lucide-react';
+import { Search, Loader2, X, Link } from 'lucide-react';
 import type { Player } from '../../types';
 import { usePlayerSearch } from '../../hooks/usePlayerSearch';
-import { fetchPlayerDetails } from '../../services/zerozeroApi';
+import { fetchPlayerDetails, parseZerozeroUrl } from '../../services/zerozeroApi';
 
 interface PlayerWithSlug extends Player {
   _slug?: string;
@@ -22,6 +22,8 @@ export function PlayerSearchInput({ searchPlayers, selectedPlayer, onSelect, onC
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const isUrlQuery = query.includes('zerozero.pt');
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -49,9 +51,14 @@ export function PlayerSearchInput({ searchPlayers, selectedPlayer, onSelect, onC
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : results.length - 1));
-    } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+    } else if (e.key === 'Enter') {
       e.preventDefault();
-      handleSelect(results[highlightedIndex]);
+      if (highlightedIndex >= 0) {
+        handleSelect(results[highlightedIndex]);
+      } else if (results.length === 1) {
+        // Auto-select if there's only one result (e.g. URL paste)
+        handleSelect(results[0]);
+      }
     } else if (e.key === 'Escape') {
       setIsOpen(false);
     }
@@ -74,7 +81,7 @@ export function PlayerSearchInput({ searchPlayers, selectedPlayer, onSelect, onC
           return;
         }
       } catch {
-        // Fallback to basic data
+        // Fallback to basic data from slug
       }
       setIsLoadingDetails(false);
     }
@@ -118,7 +125,7 @@ export function PlayerSearchInput({ searchPlayers, selectedPlayer, onSelect, onC
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => results.length > 0 && setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Pesquisar jogador no zerozero.pt..."
+          placeholder="Nome do jogador ou link do zerozero.pt..."
           className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-10 text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200 focus:outline-none"
           autoComplete="off"
         />
@@ -126,6 +133,14 @@ export function PlayerSearchInput({ searchPlayers, selectedPlayer, onSelect, onC
           <Loader2 className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-brand-400" />
         )}
       </div>
+
+      {/* Hint when URL is detected */}
+      {isUrlQuery && !isLoading && parseZerozeroUrl(query) && results.length > 0 && !isOpen && (
+        <div className="mt-1 flex items-center gap-1.5 text-xs text-brand-500">
+          <Link className="h-3 w-3" />
+          Link detetado - clique no resultado ou pressione Enter
+        </div>
+      )}
 
       {isLoadingDetails && (
         <div className="absolute z-50 mt-1 w-full rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-600 shadow-lg">
@@ -138,35 +153,39 @@ export function PlayerSearchInput({ searchPlayers, selectedPlayer, onSelect, onC
 
       {!isLoadingDetails && isOpen && results.length > 0 && (
         <ul className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg">
-          {results.map((player, index) => (
-            <li
-              key={player.id}
-              onClick={() => handleSelect(player)}
-              onMouseEnter={() => setHighlightedIndex(index)}
-              className={`flex cursor-pointer items-center gap-3 px-4 py-3 text-sm ${
-                index === highlightedIndex ? 'bg-brand-50 text-brand-700' : 'hover:bg-gray-50'
-              }`}
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-600">
-                {player.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-              </div>
-              <div className="flex-1">
-                <div className="font-medium">{player.name}</div>
-                {player.club && (
+          {results.map((player, index) => {
+            const playerWithSlug = player as PlayerWithSlug;
+            const isFromZerozero = !!playerWithSlug._slug;
+            return (
+              <li
+                key={`${player.id}-${index}`}
+                onClick={() => handleSelect(player)}
+                onMouseEnter={() => setHighlightedIndex(index)}
+                className={`flex cursor-pointer items-center gap-3 px-4 py-3 text-sm ${
+                  index === highlightedIndex ? 'bg-brand-50 text-brand-700' : 'hover:bg-gray-50'
+                }`}
+              >
+                <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
+                  isFromZerozero ? 'bg-green-100 text-green-600' : 'bg-brand-100 text-brand-600'
+                }`}>
+                  {isFromZerozero ? 'ZZ' : player.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium">{player.name}</div>
                   <div className="text-xs text-gray-500">
-                    {player.club}
+                    {player.club || (isFromZerozero ? 'zerozero.pt - clique para carregar dados' : '')}
                     {player.position ? ` · ${player.position}` : ''}
                   </div>
-                )}
-              </div>
-            </li>
-          ))}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
 
       {!isLoadingDetails && isOpen && query.length >= 2 && !isLoading && results.length === 0 && (
         <div className="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-500 shadow-lg">
-          Nenhum jogador encontrado no zerozero.pt
+          Nenhum jogador encontrado
         </div>
       )}
     </div>
