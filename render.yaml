@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: report-scouting
+    runtime: node
+    nodeVersion: "20"
+    buildCommand: npm install && npm run build
+    startCommand: node server.js
