@@ -1,6 +1,6 @@
-import { Pencil } from 'lucide-react';
+import { useRef } from 'react';
+import { Upload, User, X } from 'lucide-react';
 import type { Player } from '../../types';
-import { formatDate, calculateAge } from '../../utils/formatDate';
 
 interface Props {
   player: Player;
@@ -8,42 +8,86 @@ interface Props {
 }
 
 export function PlayerInfoDisplay({ player, onUpdate }: Props) {
-  const age = player.dateOfBirth ? calculateAge(player.dateOfBirth) : null;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function update<K extends keyof Player>(key: K, value: Player[K]) {
     onUpdate({ ...player, [key]: value });
   }
 
+  function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      update('photoUrl', ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removePhoto() {
+    update('photoUrl', null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
   return (
     <div className="rounded-xl bg-gradient-to-r from-brand-50 to-brand-100 p-5 border border-brand-200">
-      <div className="flex items-center gap-2 mb-4">
-        <Pencil className="h-4 w-4 text-brand-400" />
-        <span className="text-xs font-medium text-brand-500">Dados do jogador (editáveis)</span>
-      </div>
+      <h3 className="text-lg font-bold text-gray-800 mb-4">Dados do jogador</h3>
 
       <div className="flex flex-col sm:flex-row items-start gap-5">
-        {/* Photo */}
-        <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-3 border-brand-400 bg-white text-2xl font-bold text-brand-500 self-center sm:self-start">
+        {/* Photo upload */}
+        <div className="flex flex-col items-center gap-2 self-center sm:self-start">
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="relative flex h-24 w-24 shrink-0 cursor-pointer items-center justify-center rounded-full border-3 border-brand-400 bg-white text-brand-400 hover:border-brand-500 hover:text-brand-500 transition-colors overflow-hidden"
+          >
+            {player.photoUrl ? (
+              <img
+                src={player.photoUrl}
+                alt={player.name}
+                className="h-full w-full rounded-full object-cover"
+              />
+            ) : (
+              <User className="h-10 w-10" />
+            )}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/30 rounded-full transition-colors">
+              <Upload className="h-5 w-5 text-white opacity-0 hover:opacity-100" />
+            </div>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoUpload}
+            className="hidden"
+          />
           {player.photoUrl ? (
-            <img
-              src={player.photoUrl}
-              alt={player.name}
-              className="h-full w-full rounded-full object-cover"
-            />
+            <button
+              type="button"
+              onClick={removePhoto}
+              className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600"
+            >
+              <X className="h-3 w-3" />
+              Remover foto
+            </button>
           ) : (
-            player.name.split(' ').map((n) => n[0]).join('').slice(0, 2)
+            <span className="text-xs text-brand-400">Carregar foto</span>
           )}
         </div>
 
-        {/* Editable fields */}
+        {/* Fields */}
         <div className="flex-1 w-full space-y-3">
           {/* Name */}
-          <input
-            type="text"
-            value={player.name}
-            onChange={(e) => update('name', e.target.value)}
-            className="w-full rounded-md border border-brand-200 bg-white px-3 py-1.5 text-lg font-bold text-brand-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-200 focus:outline-none"
-          />
+          <div>
+            <label className="block text-xs font-medium text-brand-500 mb-1">Nome</label>
+            <input
+              type="text"
+              value={player.name}
+              onChange={(e) => update('name', e.target.value)}
+              placeholder="Nome completo do jogador"
+              className="w-full rounded-md border border-brand-200 bg-white px-3 py-1.5 text-lg font-bold text-brand-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-200 focus:outline-none"
+            />
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Club */}
@@ -53,58 +97,31 @@ export function PlayerInfoDisplay({ player, onUpdate }: Props) {
                 type="text"
                 value={player.club}
                 onChange={(e) => update('club', e.target.value)}
+                placeholder="Ex: FC Porto"
                 className="w-full rounded-md border border-brand-200 bg-white px-3 py-1.5 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-200 focus:outline-none"
               />
             </div>
 
-            {/* Age Group */}
+            {/* Number */}
             <div>
-              <label className="block text-xs font-medium text-brand-500 mb-1">Escalão</label>
+              <label className="block text-xs font-medium text-brand-500 mb-1">Número</label>
               <input
                 type="text"
-                value={player.ageGroup}
-                onChange={(e) => update('ageGroup', e.target.value)}
-                placeholder="Ex: Sub-19"
+                value={player.number}
+                onChange={(e) => update('number', e.target.value)}
+                placeholder="Ex: 10"
                 className="w-full rounded-md border border-brand-200 bg-white px-3 py-1.5 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-200 focus:outline-none"
               />
             </div>
 
-            {/* Date of Birth */}
+            {/* Year */}
             <div>
-              <label className="block text-xs font-medium text-brand-500 mb-1">
-                Data de nascimento
-                {age !== null && age > 0 ? ` (${age} anos)` : ''}
-              </label>
+              <label className="block text-xs font-medium text-brand-500 mb-1">Ano de nascimento</label>
               <input
-                type="date"
-                value={player.dateOfBirth}
-                onChange={(e) => update('dateOfBirth', e.target.value)}
-                className="w-full rounded-md border border-brand-200 bg-white px-3 py-1.5 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-200 focus:outline-none"
-              />
-            </div>
-
-            {/* Preferred Foot */}
-            <div>
-              <label className="block text-xs font-medium text-brand-500 mb-1">Pé preferencial</label>
-              <select
-                value={player.preferredFoot}
-                onChange={(e) => update('preferredFoot', e.target.value as Player['preferredFoot'])}
-                className="w-full rounded-md border border-brand-200 bg-white px-3 py-1.5 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-200 focus:outline-none"
-              >
-                <option value="Direito">Direito</option>
-                <option value="Esquerdo">Esquerdo</option>
-                <option value="Ambidestro">Ambidestro</option>
-              </select>
-            </div>
-
-            {/* Height */}
-            <div>
-              <label className="block text-xs font-medium text-brand-500 mb-1">Altura (cm)</label>
-              <input
-                type="number"
-                value={player.height || ''}
-                onChange={(e) => update('height', parseInt(e.target.value, 10) || 0)}
-                placeholder="Ex: 190"
+                type="text"
+                value={player.year}
+                onChange={(e) => update('year', e.target.value)}
+                placeholder="Ex: 2005"
                 className="w-full rounded-md border border-brand-200 bg-white px-3 py-1.5 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-200 focus:outline-none"
               />
             </div>
@@ -116,29 +133,11 @@ export function PlayerInfoDisplay({ player, onUpdate }: Props) {
                 type="text"
                 value={player.position}
                 onChange={(e) => update('position', e.target.value)}
-                placeholder="Ex: Defesa Central"
-                className="w-full rounded-md border border-brand-200 bg-white px-3 py-1.5 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-200 focus:outline-none"
-              />
-            </div>
-
-            {/* Nationality */}
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-brand-500 mb-1">Nacionalidade</label>
-              <input
-                type="text"
-                value={player.nationality}
-                onChange={(e) => update('nationality', e.target.value)}
-                placeholder="Ex: Portugal"
+                placeholder="Ex: Médio Centro"
                 className="w-full rounded-md border border-brand-200 bg-white px-3 py-1.5 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-200 focus:outline-none"
               />
             </div>
           </div>
-
-          {player.dateOfBirth && (
-            <p className="text-xs text-brand-400">
-              {formatDate(player.dateOfBirth)} - {player.preferredFoot.toLowerCase()} - {player.height ? `${player.height} cm` : ''}
-            </p>
-          )}
         </div>
       </div>
     </div>

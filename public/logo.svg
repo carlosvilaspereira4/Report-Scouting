@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" fill="none">
+  <!-- Simplified Atlético Cabeceirense crest placeholder -->
+  <!-- Left wing (red) -->
+  <polygon points="10,80 80,55 80,105" fill="#DC2626"/>
+  <polygon points="20,80 70,62 70,98" fill="#FBBF24"/>
+  <!-- Right wing (blue) -->
+  <polygon points="190,80 120,55 120,105" fill="#2563EB"/>
+  <polygon points="180,80 130,62 130,98" fill="#FBBF24"/>
+  <!-- Central shield -->
+  <circle cx="100" cy="80" r="42" fill="#FBBF24" stroke="#1E293B" stroke-width="3"/>
+  <circle cx="100" cy="80" r="30" fill="#F59E0B"/>
+  <!-- Inner coat of arms -->
+  <rect x="85" y="65" width="30" height="25" rx="3" fill="#3B82F6" stroke="#1E293B" stroke-width="1.5"/>
+  <path d="M90 75 Q100 70 110 75" stroke="white" stroke-width="2" fill="none"/>
+  <path d="M90 80 Q100 75 110 80" stroke="white" stroke-width="2" fill="none"/>
+  <!-- Crown -->
+  <rect x="80" y="33" width="40" height="10" rx="2" fill="#D1D5DB" stroke="#1E293B" stroke-width="1"/>
+  <rect x="85" y="25" width="6" height="10" fill="#D1D5DB" stroke="#1E293B" stroke-width="1"/>
+  <rect x="97" y="25" width="6" height="10" fill="#D1D5DB" stroke="#1E293B" stroke-width="1"/>
+  <rect x="109" y="25" width="6" height="10" fill="#D1D5DB" stroke="#1E293B" stroke-width="1"/>
+  <!-- Initials -->
+  <text x="100" y="145" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="14" fill="#1E293B">AC</text>
+</svg>

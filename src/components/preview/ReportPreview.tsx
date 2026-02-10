@@ -1,6 +1,5 @@
 import type { ReportFormData } from '../form/ReportForm';
 import type { Grade } from '../../types';
-import { formatDate, calculateAge } from '../../utils/formatDate';
 import { GRADE_COLORS } from '../../constants/reportOptions';
 
 interface Props {
@@ -10,15 +9,14 @@ interface Props {
 export function ReportPreview({ data }: Props) {
   const { player } = data;
 
-  if (!player) {
+  if (!player || !player.name) {
     return (
       <div className="flex aspect-[1/1.414] items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-sm text-gray-400">
-        Selecione um jogador para ver o preview
+        Preencha os dados do jogador para ver o preview
       </div>
     );
   }
 
-  const age = calculateAge(player.dateOfBirth);
   const initials = player.name.split(' ').map((n) => n[0]).join('').slice(0, 2);
 
   function gradeColor(grade?: Grade) {
@@ -33,21 +31,43 @@ export function ReportPreview({ data }: Props) {
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-brand-500" />
           <div className="absolute top-0 left-0 h-full w-0.5 bg-brand-100" />
 
-          {/* Header */}
+          {/* Header with logo */}
           <div className="flex items-start justify-between pt-2">
+            <div className="flex items-center gap-3">
+              <img src="/logo.svg" alt="AC" className="h-14 w-auto" />
+              <div>
+                <p className="text-xs font-bold text-brand-500">Scouting Atlético Cabeceirense</p>
+                <p className="text-xs text-gray-400">Relatório de Observação</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Player info */}
+          <div className="mt-4 flex items-start justify-between">
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-800">{player.name}</h1>
               <p className="text-base font-bold text-brand-500">
-                {player.club} ({player.ageGroup})
+                {player.club}{player.number ? ` | #${player.number}` : ''}
               </p>
               <p className="text-sm text-brand-500">
-                {formatDate(player.dateOfBirth)} ({age} anos) - Pé {player.preferredFoot.toLowerCase()} - {player.height} cm
+                {player.position}{player.year ? ` | Nascimento: ${player.year}` : ''}
               </p>
             </div>
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-[3px] border-brand-300 bg-brand-50 text-2xl font-bold text-brand-500">
-              {initials}
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-[3px] border-brand-300 bg-brand-50 text-2xl font-bold text-brand-500 overflow-hidden">
+              {player.photoUrl ? (
+                <img src={player.photoUrl} alt={player.name} className="h-full w-full object-cover" />
+              ) : (
+                initials || '?'
+              )}
             </div>
           </div>
+
+          {/* Match info */}
+          {data.matchDescription && (
+            <p className="mt-1 text-xs text-gray-400">
+              {data.matchDescription}{data.matchDate ? ` | ${data.matchDate}` : ''}
+            </p>
+          )}
 
           {/* Divider */}
           <div className="my-4 h-px bg-brand-100" />
@@ -67,7 +87,7 @@ export function ReportPreview({ data }: Props) {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <span className="w-52 text-sm font-bold text-gray-800">Recomendação de acompanhamento</span>
+              <span className="w-52 text-sm font-bold text-gray-800">Recomendação</span>
               <span className="text-sm text-gray-700">{data.followUp ?? '—'}</span>
             </div>
           </div>
@@ -111,7 +131,7 @@ export function ReportPreview({ data }: Props) {
             <span className="text-sm font-bold text-brand-500">
               Relatório por {data.authorName || '—'}
             </span>
-            <span className="text-xs text-gray-400">360 Scouting</span>
+            <span className="text-xs text-gray-400">Scouting Atlético Cabeceirense</span>
           </div>
         </div>
       </div>

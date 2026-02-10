@@ -2,21 +2,18 @@ export interface Player {
   id: string;
   name: string;
   club: string;
-  ageGroup: string;
-  dateOfBirth: string;
-  preferredFoot: 'Direito' | 'Esquerdo' | 'Ambidestro';
-  height: number;
+  number: string;
+  year: string;
   position: string;
   photoUrl: string | null;
-  nationality: string;
 }
 
 export type Grade = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export type FollowUp =
-  | 'Passar à frente'
-  | 'Acompanhar'
-  | 'Acompanhar com reservas'
+  | 'Avançar para observação detalhada'
+  | 'Acompanhar mais tarde'
+  | 'Observação insuficiente'
   | 'Descartar';
 
 export interface ScoutingReport {
@@ -38,6 +35,5 @@ export interface ScoutingReport {
 export interface ScoutingReportWidgetProps {
   initialPlayer?: Player;
   onSubmit?: (report: ScoutingReport) => Promise<void>;
-  searchPlayers?: (query: string) => Promise<Player[]>;
   embedded?: boolean;
 }

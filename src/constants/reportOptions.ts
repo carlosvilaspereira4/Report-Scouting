@@ -19,9 +19,9 @@ export const GRADE_LABELS: Record<Grade, string> = {
 };
 
 export const FOLLOW_UP_OPTIONS: FollowUp[] = [
-  'Passar à frente',
-  'Acompanhar',
-  'Acompanhar com reservas',
+  'Avançar para observação detalhada',
+  'Acompanhar mais tarde',
+  'Observação insuficiente',
   'Descartar',
 ];
 

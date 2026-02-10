@@ -11,7 +11,7 @@ export function PdfFooter({ authorName }: Props) {
       <Text style={styles.footerAuthor}>
         Relatório por {authorName || '—'}
       </Text>
-      <Text style={styles.footerBrand}>360 Scouting</Text>
+      <Text style={styles.footerBrand}>Scouting Atlético Cabeceirense</Text>
     </View>
   );
 }

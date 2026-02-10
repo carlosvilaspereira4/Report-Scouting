@@ -24,7 +24,7 @@ const INITIAL_DATA: ReportFormData = {
 function validateForm(data: ReportFormData): Partial<Record<keyof ReportFormData, string>> {
   const errors: Partial<Record<keyof ReportFormData, string>> = {};
 
-  if (!data.player) errors.player = 'Selecione um jogador';
+  if (!data.player || !data.player.name) errors.player = 'Preencha o nome do jogador';
   if (!data.matchDate) errors.matchDate = 'Data obrigatória';
   if (!data.matchDescription) errors.matchDescription = 'Jogo observado obrigatório';
   if (!data.performanceGrade) errors.performanceGrade = 'Selecione uma nota';
@@ -123,7 +123,7 @@ export default function App() {
           <div className="sticky top-4 space-y-4">
             <ReportPreview data={formData} />
 
-            {formData.player && (
+            {formData.player && formData.player.name && (
               <button
                 type="button"
                 onClick={handleSubmit}

@@ -1,6 +1,5 @@
-import { View, Text } from '@react-pdf/renderer';
+import { View, Text, Image } from '@react-pdf/renderer';
 import type { Player } from '../../types';
-import { formatDate, calculateAge } from '../../utils/formatDate';
 import { styles } from './pdfStyles';
 
 interface Props {
@@ -8,7 +7,6 @@ interface Props {
 }
 
 export function PdfPlayerInfo({ player }: Props) {
-  const age = calculateAge(player.dateOfBirth);
   const initials = player.name.split(' ').map((n) => n[0]).join('').slice(0, 2);
 
   return (
@@ -18,15 +16,21 @@ export function PdfPlayerInfo({ player }: Props) {
           {player.name}
         </Text>
         <Text style={styles.clubInfo}>
-          {player.club} ({player.ageGroup})
+          {player.club}{player.number ? ` | #${player.number}` : ''}
         </Text>
         <Text style={styles.playerMeta}>
-          {formatDate(player.dateOfBirth)} ({age} anos) - Pé {player.preferredFoot.toLowerCase()} - {player.height} cm
+          {player.position}{player.year ? ` | Nascimento: ${player.year}` : ''}
         </Text>
       </View>
-      <View style={styles.photoPlaceholder}>
-        <Text style={styles.photoInitials}>{initials}</Text>
-      </View>
+      {player.photoUrl ? (
+        <View style={styles.photoContainer}>
+          <Image src={player.photoUrl} style={{ width: 80, height: 80 }} />
+        </View>
+      ) : (
+        <View style={styles.photoPlaceholder}>
+          <Text style={styles.photoInitials}>{initials}</Text>
+        </View>
+      )}
     </View>
   );
 }

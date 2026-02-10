@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import type { ScoutingReportWidgetProps } from '../types';
-import { searchPlayers as defaultSearch } from '../data/mockPlayers';
 import { ReportForm } from '../components/form/ReportForm';
 import { ReportPreview } from '../components/preview/ReportPreview';
 import { ReportDocument } from '../components/pdf/ReportDocument';
@@ -28,7 +27,6 @@ const INITIAL_DATA: ReportFormData = {
  * Usage in an existing platform:
  * ```tsx
  * <ScoutingReportWidget
- *   searchPlayers={api.searchPlayers}
  *   onSubmit={(report) => api.saveReport(report)}
  *   embedded={true}
  * />
@@ -37,7 +35,6 @@ const INITIAL_DATA: ReportFormData = {
 export function ScoutingReportWidget({
   initialPlayer,
   onSubmit,
-  searchPlayers = defaultSearch,
   embedded = false,
 }: ScoutingReportWidgetProps) {
   const [formData, setFormData] = useState<ReportFormData>(INITIAL_DATA);
@@ -54,12 +51,10 @@ export function ScoutingReportWidget({
 
     setIsGenerating(true);
     try {
-      // Generate PDF
       const blob = await pdf(
         <ReportDocument data={formData} />
       ).toBlob();
 
-      // If parent provided an onSubmit callback, call it
       if (onSubmit) {
         await onSubmit({
           playerId: formData.player.id,
@@ -78,7 +73,6 @@ export function ScoutingReportWidget({
         });
       }
 
-      // Download PDF
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -107,7 +101,6 @@ export function ScoutingReportWidget({
             formData={formData}
             onChange={setFormData}
             onSubmit={handleSubmit}
-            searchPlayersFn={searchPlayers}
           />
         </div>
 

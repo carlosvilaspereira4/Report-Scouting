@@ -8,9 +8,9 @@ interface Props {
 }
 
 const FOLLOW_UP_STYLES: Record<FollowUp, { bg: string; border: string; text: string; selectedBg: string }> = {
-  'Passar à frente': { bg: 'bg-green-50', border: 'border-green-400', text: 'text-green-700', selectedBg: 'bg-green-100' },
-  'Acompanhar': { bg: 'bg-blue-50', border: 'border-blue-400', text: 'text-blue-700', selectedBg: 'bg-blue-100' },
-  'Acompanhar com reservas': { bg: 'bg-yellow-50', border: 'border-yellow-400', text: 'text-yellow-700', selectedBg: 'bg-yellow-100' },
+  'Avançar para observação detalhada': { bg: 'bg-green-50', border: 'border-green-400', text: 'text-green-700', selectedBg: 'bg-green-100' },
+  'Acompanhar mais tarde': { bg: 'bg-blue-50', border: 'border-blue-400', text: 'text-blue-700', selectedBg: 'bg-blue-100' },
+  'Observação insuficiente': { bg: 'bg-yellow-50', border: 'border-yellow-400', text: 'text-yellow-700', selectedBg: 'bg-yellow-100' },
   'Descartar': { bg: 'bg-red-50', border: 'border-red-400', text: 'text-red-700', selectedBg: 'bg-red-100' },
 };
 
